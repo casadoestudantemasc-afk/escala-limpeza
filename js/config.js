@@ -1,5 +1,5 @@
 const CONFIG = {
-  SUPABASE_URL: 'COLE_SUA_SUPABASE_URL_AQUI',
-  SUPABASE_ANON_KEY: 'COLE_SUA_SUPABASE_ANON_KEY_AQUI',
+  SUPABASE_URL: 'https://vfihvspmfycluuarckhw.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_xwBTgrNZ730akDIM2w9F3A_OJDnH1DY',
   ADMIN_PASSWORD: 'sindico2026'  // Altere para uma senha de sua preferência
 };
