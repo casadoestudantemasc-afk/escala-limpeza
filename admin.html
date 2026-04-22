@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Escala de Limpeza</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Modal de Login -->
+  <div id="modal-login" class="modal-overlay">
+    <div class="modal">
+      <h2>🔒 Acesso Restrito</h2>
+      <p>Área do síndico. Informe a senha para continuar.</p>
+      <div class="form-group">
+        <input type="password" id="input-senha" class="input" placeholder="Senha" autofocus>
+        <p id="erro-senha" class="error-msg hidden">Senha incorreta.</p>
+      </div>
+      <br>
+      <button class="btn btn-primary" onclick="tentarLogin()">Entrar</button>
+    </div>
+  </div>
+
+  <div class="admin-app">
+    <header class="header">
+      <div class="header-inner wide">
+        <div class="header-logo">🏠</div>
+        <div>
+          <h1 class="header-title">Painel do Síndico</h1>
+          <p class="header-subtitle">Escala de Limpeza — Casa do Estudante</p>
+        </div>
+        <div class="header-spacer"></div>
+        <button class="btn-logout" onclick="logout()">Sair</button>
+      </div>
+    </header>
+
+    <main class="admin-main">
+
+      <!-- Navegação de semana -->
+      <div class="week-nav">
+        <button class="week-nav-btn" onclick="semanaAnterior()" title="Semana anterior">◀</button>
+        <span id="week-label" class="week-nav-label">Carregando...</span>
+        <button class="week-nav-btn" onclick="proximaSemana()" title="Próxima semana">▶</button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn" data-tab="escala" onclick="mudarTab('escala')">📋 Escala</button>
+        <button class="tab-btn" data-tab="config" onclick="mudarTab('config')">⚙️ Configuração</button>
+        <button class="tab-btn" data-tab="feriados" onclick="mudarTab('feriados')">🏖️ Feriados</button>
+        <button class="tab-btn" data-tab="moradores" onclick="mudarTab('moradores')">👥 Moradores</button>
+      </div>
+
+      <!-- ================================================
+           ABA: ESCALA
+           ================================================ -->
+      <div id="tab-escala" class="tab-content">
+
+        <!-- Resumo de indisponibilidades -->
+        <div class="card" style="margin-bottom:16px">
+          <h3 class="card-title">Indisponibilidades da semana</h3>
+          <p id="contagem-respostas" class="resposta-label">Carregando...</p>
+          <div id="resumo-indisponibilidades" class="unavail-grid"></div>
+        </div>
+
+        <!-- Ações e escala gerada -->
+        <div class="card">
+          <h3 class="card-title">Escala gerada</h3>
+          <div id="escala-actions" class="escala-actions">
+            <button class="btn btn-primary" onclick="gerarEscala()">⚡ Gerar Escala</button>
+          </div>
+          <div id="escala-container">
+            <p class="empty-msg">Nenhuma escala gerada para esta semana.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================================================
+           ABA: CONFIGURAÇÃO DE LOCAIS
+           ================================================ -->
+      <div id="tab-config" class="tab-content">
+        <div class="card" style="margin-bottom:16px">
+          <h3 class="card-title">Locais por dia da semana</h3>
+          <p class="card-desc">
+            Defina quais locais serão limpos em cada dia desta semana.<br>
+            Se deixar todos marcados, todos os 9 locais são usados normalmente.
+          </p>
+          <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap">
+            <button class="btn btn-outline btn-sm" onclick="usarTodosLocais()">
+              Marcar todos
+            </button>
+          </div>
+          <div id="config-locais-container" style="display:flex; flex-direction:column; gap:12px"></div>
+          <br>
+          <button class="btn btn-primary" style="max-width:320px" onclick="salvarConfigLocais()">
+            💾 Salvar configuração da semana
+          </button>
+        </div>
+      </div>
+
+      <!-- ================================================
+           ABA: FERIADOS
+           ================================================ -->
+      <div id="tab-feriados" class="tab-content">
+        <div class="card">
+          <div class="section-header">
+            <h3 class="section-title">Feriados cadastrados</h3>
+          </div>
+
+          <div id="lista-feriados" class="feriado-list">
+            <p class="empty-msg">Carregando...</p>
+          </div>
+
+          <h4 style="font-size:14px; font-weight:600; margin-bottom:10px;">Adicionar feriado</h4>
+          <div class="add-form">
+            <input type="date" id="input-feriado-data" class="input">
+            <input type="text" id="input-feriado-desc" class="input"
+              placeholder="Descrição (ex: Tiradentes)">
+            <button class="btn btn-success" onclick="adicionarFeriado()">Adicionar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================
+           ABA: MORADORES
+           ================================================ -->
+      <div id="tab-moradores" class="tab-content">
+        <div class="card">
+          <div class="section-header">
+            <h3 class="section-title">Moradores</h3>
+            <span id="contagem-moradores" class="section-count"></span>
+          </div>
+          <p class="card-desc" style="margin-bottom:12px">
+            Use o toggle para ativar ou desativar moradores na escala.
+          </p>
+
+          <div id="lista-moradores" class="morador-list"></div>
+
+          <h4 style="font-size:14px; font-weight:600; margin-bottom:10px;">Adicionar morador</h4>
+          <div class="add-form">
+            <input type="text" id="input-novo-morador" class="input"
+              placeholder="Nome completo do morador">
+            <button class="btn btn-success" onclick="adicionarMorador()">Adicionar</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="loading" class="loading-overlay hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

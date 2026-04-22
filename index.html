@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Escala de Limpeza — Casa do Estudante</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-inner">
+        <div class="header-logo">🏠</div>
+        <div>
+          <h1 class="header-title">Escala de Limpeza</h1>
+          <p class="header-subtitle">Casa do Estudante</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+
+      <!-- Etapa 1: Identificação -->
+      <div id="step-name" class="card">
+        <h2 class="card-title">Identificação</h2>
+        <p class="card-desc">Digite seu nome para marcar sua disponibilidade na escala:</p>
+        <div class="form-group">
+          <input type="text" id="search-input" class="input"
+            placeholder="Digite seu nome..." autocomplete="off" spellcheck="false">
+          <div id="suggestions" class="suggestions hidden"></div>
+        </div>
+        <div id="selected-name" class="selected-name hidden">
+          <span id="selected-text"></span>
+          <button class="btn-clear" onclick="clearName()" title="Limpar">✕</button>
+        </div>
+      </div>
+
+      <!-- Etapa 2: Seleção de semana -->
+      <div id="step-week" class="card hidden">
+        <h2 class="card-title">Semana</h2>
+        <div class="week-tabs">
+          <button id="tab-current" class="week-tab" onclick="selecionarSemana(0)">
+            Esta semana
+          </button>
+          <button id="tab-next" class="week-tab" onclick="selecionarSemana(1)">
+            Próxima semana
+          </button>
+        </div>
+        <p id="week-label" class="week-label"></p>
+      </div>
+
+      <!-- Etapa 3: Marcar disponibilidade -->
+      <div id="step-availability" class="card hidden">
+        <h2 class="card-title">Disponibilidade</h2>
+        <p class="card-desc">
+          Marque os dias em que <strong>não pode</strong> fazer a limpeza.<br>
+          Se puder todos os dias, deixe em branco e clique em Salvar.
+        </p>
+        <div id="days-list" class="days-list"></div>
+        <button id="btn-save" class="btn btn-primary" onclick="salvarDisponibilidade()">
+          Salvar disponibilidade
+        </button>
+      </div>
+
+      <!-- Sucesso -->
+      <div id="step-success" class="card hidden success-card">
+        <div class="success-icon">✓</div>
+        <h2 class="card-title">Salvo com sucesso!</h2>
+        <p class="card-desc" id="success-msg"></p>
+        <br>
+        <button class="btn btn-secondary" onclick="resetForm()">
+          Marcar outra semana
+        </button>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="loading" class="loading-overlay hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/resident.js"></script>
+</body>
+</html>
