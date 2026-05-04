@@ -91,7 +91,16 @@ body {
 
 .header-inner.wide { max-width: 860px; }
 
-.header-logo { font-size: 28px; line-height: 1; }
+.header-logo { line-height: 1; }
+.header-logo img {
+  height: 44px;
+  width: 44px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: white;
+  padding: 3px;
+  display: block;
+}
 .header-title { font-size: 18px; font-weight: 700; }
 .header-subtitle { font-size: 13px; opacity: 0.85; }
 .header-spacer { flex: 1; }
