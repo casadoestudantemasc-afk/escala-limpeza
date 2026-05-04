@@ -111,6 +111,8 @@ const DB = {
    * Salva escala da semana
    */
   async salvarEscala(rows) {
+    if (!Array.isArray(rows) || rows.length === 0) return;
+
     const { error } = await _sb
       .from('escala')
       .upsert(rows, { onConflict: ['morador_id', 'local_id', 'data'] });
@@ -166,21 +168,34 @@ const DB = {
         const map = {};
         (data || []).forEach(row => {
           if (!map[row.dia]) map[row.dia] = [];
-          map[row.dia].push(row.local_id);
+          // local_id nulo representa "dia explicitamente vazio".
+          if (row.local_id !== null && row.local_id !== undefined) {
+            map[row.dia].push(row.local_id);
+          }
         });
+        // Se existe qualquer configuração na semana, dias ausentes
+        // devem ser tratados como "0 locais" (não como padrão "todos").
+        if ((data || []).length > 0) {
+          diasSemana.forEach(dia => {
+            if (!Object.prototype.hasOwnProperty.call(map, dia)) {
+              map[dia] = [];
+            }
+          });
+        }
         return map;
       }
 
       // Fallback para schema legado: uma linha por semana com array "locais"
-      const { data: legado, error: legadoError } = await _sb
+      // Usar select('*') evita erro de coluna inexistente em schema novo.
+      const { data: legadoRows, error: legadoError } = await _sb
         .from('config_locais_semana')
-        .select('locais')
+        .select('*')
         .eq('semana', segunda)
-        .maybeSingle();
+        .limit(1);
 
       if (legadoError) throw legadoError;
 
-      const locais = legado?.locais || [];
+      const locais = Array.isArray(legadoRows) ? (legadoRows[0]?.locais || []) : [];
       const map = {};
       diasSemana.forEach(dia => {
         map[dia] = [...locais];
@@ -198,6 +213,24 @@ const DB = {
    */
   async salvarConfigLocais(segunda, locais) {
     const diasSemana = getDiasISOdaSemana(segunda);
+    const configPorDia = {};
+
+    // Compatibilidade:
+    // - array => aplica os mesmos locais para todos os dias
+    // - objeto => usa locais específicos por dia
+    if (Array.isArray(locais)) {
+      diasSemana.forEach(dia => {
+        configPorDia[dia] = [...locais];
+      });
+    } else if (locais && typeof locais === 'object') {
+      diasSemana.forEach(dia => {
+        configPorDia[dia] = Array.isArray(locais[dia]) ? [...locais[dia]] : [];
+      });
+    } else {
+      diasSemana.forEach(dia => {
+        configPorDia[dia] = [];
+      });
+    }
 
     try {
       // Schema atual: uma linha por dia/local.
@@ -207,11 +240,16 @@ const DB = {
         .eq('semana', segunda);
       if (delError) throw delError;
 
-      if (!Array.isArray(locais) || locais.length === 0) return;
-
       const rows = [];
       diasSemana.forEach(dia => {
-        locais.forEach(localId => {
+        const locaisDia = configPorDia[dia] || [];
+        if (locaisDia.length === 0) {
+          // Linha sentinela para manter "dia sem locais" persistido.
+          rows.push({ semana: segunda, dia, local_id: null });
+          return;
+        }
+
+        locaisDia.forEach(localId => {
           rows.push({ semana: segunda, dia, local_id: localId });
         });
       });
@@ -220,9 +258,13 @@ const DB = {
       if (error) throw error;
     } catch (schemaAtualError) {
       // Fallback para schema legado: um registro por semana com coluna array.
+      const locaisLegado = Array.from(
+        new Set(diasSemana.flatMap(dia => configPorDia[dia] || []))
+      );
+
       const { error: legadoError } = await _sb
         .from('config_locais_semana')
-        .upsert({ semana: segunda, locais }, { onConflict: 'semana' });
+        .upsert({ semana: segunda, locais: locaisLegado }, { onConflict: 'semana' });
 
       if (legadoError) throw schemaAtualError;
     }

@@ -49,8 +49,9 @@ async function gerarEscala(forcar = false) {
       const indispHoje = indispMap[iso] || new Set();
 
       // Locais ativos para este dia (config ou todos)
-      const idsConfigurados = AppState.configLocaisSemana[iso];
-      const locaisHoje = idsConfigurados && idsConfigurados.length > 0
+      const temConfigDia = Object.prototype.hasOwnProperty.call(AppState.configLocaisSemana, iso);
+      const idsConfigurados = AppState.configLocaisSemana[iso] || [];
+      const locaisHoje = temConfigDia
         ? AppState.locais.filter(l => idsConfigurados.includes(l.id))
         : AppState.locais;
 
@@ -336,16 +337,23 @@ async function adicionarMorador() {
  * Salva configuração de locais da semana
  */
 async function salvarConfigLocais() {
-  const checkboxes = document.querySelectorAll('#config-locais-container input[type="checkbox"]:checked');
-  const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
-  
   const dias = getDiasSemana(AppState.weekOffset);
   const segunda = toISO(dias[0]);
+  const configPorDia = {};
+
+  dias.forEach(d => {
+    const iso = toISO(d);
+    const checkboxesDia = document.querySelectorAll(
+      `#config-locais-container input[type="checkbox"][data-dia="${iso}"]:checked`
+    );
+    configPorDia[iso] = Array.from(checkboxesDia).map(cb => parseInt(cb.value));
+  });
 
   try {
-    await DB.salvarConfigLocais(segunda, ids);
+    await DB.salvarConfigLocais(segunda, configPorDia);
     dias.forEach(d => {
-      AppState.configLocaisSemana[toISO(d)] = [...ids];
+      const iso = toISO(d);
+      AppState.configLocaisSemana[iso] = [...(configPorDia[iso] || [])];
     });
     showToast('Configuração salva!', 'success');
   } catch (e) {
@@ -363,14 +371,66 @@ function usarTodosLocais() {
 }
 
 /**
+ * Limpa todos os locais da semana inteira
+ */
+function limparTodosLocais() {
+  const checkboxes = document.querySelectorAll('#config-locais-container input[type="checkbox"]');
+  checkboxes.forEach(cb => cb.checked = false);
+  atualizarConfigLocais();
+}
+
+/**
+ * Marca todos os locais de um dia específico
+ */
+function marcarTodosLocaisDia(diaISO) {
+  const checkboxes = document.querySelectorAll(
+    `#config-locais-container input[type="checkbox"][data-dia="${diaISO}"]`
+  );
+  checkboxes.forEach(cb => cb.checked = true);
+  atualizarConfigLocais();
+}
+
+/**
+ * Limpa todos os locais de um dia específico
+ */
+function limparLocaisDia(diaISO) {
+  const checkboxes = document.querySelectorAll(
+    `#config-locais-container input[type="checkbox"][data-dia="${diaISO}"]`
+  );
+  checkboxes.forEach(cb => cb.checked = false);
+  atualizarConfigLocais();
+}
+
+/**
  * Atualiza visualização da configuração de locais
  */
 function atualizarConfigLocais() {
-  // Atualiza contador de locais selecionados
+  const totalLocais = AppState.locais.length || 0;
+  const dias = getDiasSemana(AppState.weekOffset).map(toISO);
+
+  // Atualiza estado visual de cada item (desmarcado)
+  document.querySelectorAll('#config-locais-container .config-local-item').forEach(item => {
+    const cb = item.querySelector('input[type="checkbox"]');
+    if (!cb) return;
+    item.classList.toggle('desmarcado', !cb.checked);
+  });
+
+  // Atualiza contador por dia
+  dias.forEach(iso => {
+    const countDia = document.querySelectorAll(
+      `#config-locais-container input[type="checkbox"][data-dia="${iso}"]:checked`
+    ).length;
+    const countDiaEl = document.querySelector(`[data-count-dia="${iso}"]`);
+    if (countDiaEl) {
+      countDiaEl.textContent = `${countDia} de ${totalLocais} locais`;
+    }
+  });
+
+  // Atualiza contador geral da semana
   const checkboxes = document.querySelectorAll('#config-locais-container input[type="checkbox"]:checked');
   const countEl = document.getElementById('count-locais-config');
   if (countEl) {
-    countEl.textContent = `${checkboxes.length} locais selecionados`;
+    countEl.textContent = `${checkboxes.length} marcações na semana`;
   }
 }
 
@@ -403,5 +463,8 @@ export {
   adicionarMorador,
   salvarConfigLocais,
   usarTodosLocais,
+  limparTodosLocais,
+  marcarTodosLocaisDia,
+  limparLocaisDia,
   atualizarConfigLocais
 };

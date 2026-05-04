@@ -197,33 +197,45 @@ function renderizarConfigTab() {
   if (!container) return;
 
   const dias = getDiasSemana(AppState.weekOffset);
-  const configDaSemana = dias
-    .map(d => AppState.configLocaisSemana[toISO(d)] || [])
-    .find(ids => ids.length > 0) || [];
-  const usarPadraoTodos = configDaSemana.length === 0;
-
-  let html = `<p class="config-hint">Selecione os locais ativos para esta semana (padrão: todos):</p>`;
+  let html = `<p class="config-hint">Selecione os locais para cada dia da semana:</p>`;
   html += `<p id="count-locais-config" class="week-label" style="margin-bottom:10px"></p>`;
-  html += `<div class="config-locais-grid">`;
-  
-  AppState.locais.forEach(local => {
-    const isChecked = (usarPadraoTodos || configDaSemana.includes(local.id)) ? 'checked' : '';
-    const emoji = EMOJIS_LOCAIS[local.nome] || '📍';
-    html += `
-      <label class="config-local-item">
-        <input type="checkbox" value="${local.id}" ${isChecked} onchange="atualizarConfigLocais()">
-        <span>${emoji}</span>
-        <span>${local.nome}</span>
-      </label>
-    `;
-  });
-  
-  html += `</div>`;
-  html += `
-    <button class="btn btn-secondary" onclick="usarTodosLocais()">Usar todos os locais</button>
-    <button class="btn btn-primary" onclick="salvarConfigLocais()">💾 Salvar Configuração</button>
-  `;
+  html += `<div class="config-dias-grid">`;
 
+  dias.forEach(d => {
+    const iso = toISO(d);
+    const temConfigDia = Object.prototype.hasOwnProperty.call(AppState.configLocaisSemana, iso);
+    const locaisDia = AppState.configLocaisSemana[iso] || [];
+    const usarPadraoTodos = !temConfigDia;
+
+    html += `<section class="config-dia-card">`;
+    html += `
+      <div class="config-dia-top">
+        <h4 class="config-dia-titulo">${DIAS_SEMANA[d.getDay()]}, ${toBR(d)}</h4>
+        <div class="config-dia-actions">
+          <button class="btn btn-outline btn-sm" onclick="marcarTodosLocaisDia('${iso}')">Todos</button>
+          <button class="btn btn-outline btn-sm" onclick="limparLocaisDia('${iso}')">Limpar</button>
+        </div>
+      </div>
+      <p class="config-dia-count" data-count-dia="${iso}"></p>
+      <div class="config-locais-grid">
+    `;
+
+    AppState.locais.forEach(local => {
+      const isChecked = (usarPadraoTodos || locaisDia.includes(local.id)) ? 'checked' : '';
+      const emoji = EMOJIS_LOCAIS[local.nome] || '📍';
+      html += `
+        <label class="config-local-item" data-dia-label="${iso}">
+          <input type="checkbox" data-dia="${iso}" value="${local.id}" ${isChecked} onchange="atualizarConfigLocais()">
+          <span>${emoji}</span>
+          <span>${local.nome}</span>
+        </label>
+      `;
+    });
+
+    html += `</div></section>`;
+  });
+
+  html += `</div>`;
   container.innerHTML = html;
 }
 

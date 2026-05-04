@@ -747,15 +747,44 @@ body {
    ADMIN — CONFIGURAÇÃO DE LOCAIS
    ============================================================ */
 
-.config-dia-card { padding: 16px; }
+.config-dias-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.config-dia-card {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.config-dia-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
 
 .config-dia-titulo {
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 0;
   color: var(--primary);
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--primary-light);
+}
+
+.config-dia-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.config-dia-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
 }
 
 .config-locais-grid {

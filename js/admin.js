@@ -27,6 +27,9 @@ import {
   adicionarMorador,
   salvarConfigLocais,
   usarTodosLocais,
+  limparTodosLocais,
+  marcarTodosLocaisDia,
+  limparLocaisDia,
   atualizarConfigLocais
 } from './modules/escala.js';
 
@@ -224,6 +227,9 @@ window.adicionarMorador = adicionarMorador;
 // Configurações
 window.salvarConfigLocais = salvarConfigLocais;
 window.usarTodosLocais = usarTodosLocais;
+window.limparTodosLocais = limparTodosLocais;
+window.marcarTodosLocaisDia = marcarTodosLocaisDia;
+window.limparLocaisDia = limparLocaisDia;
 window.atualizarConfigLocais = atualizarConfigLocais;
 
 // Estado global
