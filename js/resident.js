@@ -5,7 +5,7 @@ let weekOffset = 0;
 let diasSemana = [];
 
 async function init() {
-  showLoading(true);
+  showLoading(true, 'Carregando moradores...');
   try {
     [moradores, feriados] = await Promise.all([
       DB.getMoradoresAtivos(),
@@ -26,29 +26,45 @@ function setupBusca() {
   const input = document.getElementById('search-input');
   const suggestions = document.getElementById('suggestions');
 
-  input.addEventListener('input', () => {
-    const q = input.value.trim().toLowerCase();
+  function renderSugestoes(q) {
     suggestions.innerHTML = '';
     if (!q) { suggestions.classList.add('hidden'); return; }
 
-    const matches = moradores.filter(m => m.nome.toLowerCase().includes(q));
+    const matches = moradores
+      .filter(m => m.nome.toLowerCase().includes(q))
+      .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+
     if (matches.length === 0) { suggestions.classList.add('hidden'); return; }
 
     matches.forEach(m => {
       const div = document.createElement('div');
       div.className = 'suggestion-item';
-      div.textContent = m.nome;
+      const idx = m.nome.toLowerCase().indexOf(q);
+      if (idx >= 0) {
+        div.innerHTML =
+          escapeHtml(m.nome.slice(0, idx)) +
+          `<mark>${escapeHtml(m.nome.slice(idx, idx + q.length))}</mark>` +
+          escapeHtml(m.nome.slice(idx + q.length));
+      } else {
+        div.textContent = m.nome;
+      }
       div.addEventListener('click', () => selecionarMorador(m));
       suggestions.appendChild(div);
     });
     suggestions.classList.remove('hidden');
-  });
+  }
+
+  input.addEventListener('input', () => renderSugestoes(input.value.trim().toLowerCase()));
 
   document.addEventListener('click', e => {
     if (!e.target.closest('#search-input') && !e.target.closest('#suggestions')) {
       suggestions.classList.add('hidden');
     }
   });
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function selecionarMorador(m) {
@@ -101,7 +117,7 @@ async function selecionarSemana(offset) {
 
 async function carregarDisponibilidade() {
   if (!selectedMorador) return;
-  showLoading(true);
+  showLoading(true, 'Carregando disponibilidade...');
   try {
     const start = DateUtil.toISO(diasSemana[0]);
     const end = DateUtil.toISO(diasSemana[4]);
@@ -175,7 +191,7 @@ async function salvarDisponibilidade() {
   const start = DateUtil.toISO(diasSemana[0]);
   const end = DateUtil.toISO(diasSemana[4]);
 
-  showLoading(true);
+  showLoading(true, 'Salvando indisponibilidade...');
   const btn = document.getElementById('btn-save');
   btn.disabled = true;
 
@@ -216,4 +232,25 @@ function resetForm() {
   document.getElementById('step-name').classList.remove('hidden');
 }
 
-document.addEventListener('DOMContentLoaded', init);
+function setupAtalhos() {
+  const input = document.getElementById('search-input');
+  const suggestions = document.getElementById('suggestions');
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      suggestions.classList.add('hidden');
+      input.blur();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      input.focus();
+      input.select();
+    }
+    if (e.key === 'Enter' && document.activeElement === input) {
+      const first = suggestions.querySelector('.suggestion-item');
+      if (first) first.click();
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => { init(); setupAtalhos(); });

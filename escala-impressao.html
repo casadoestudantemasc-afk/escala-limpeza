@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Escala de Limpeza — Impressão</title>
+  <style>
+    /* ============================================================
+       RESET & BASE
+       ============================================================ */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #fff;
+      color: #111;
+      font-size: 12px;
+      line-height: 1.4;
+      padding: 20px;
+    }
+
+    /* ============================================================
+       HEADER
+       ============================================================ */
+    .print-header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #1e40af;
+    }
+
+    .print-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 4px;
+    }
+
+    .print-header .periodo {
+      font-size: 14px;
+      color: #555;
+      font-weight: 500;
+    }
+
+    /* ============================================================
+       TABELA PRINCIPAL
+       ============================================================ */
+    .escala-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    .escala-table thead th {
+      background: #1e40af;
+      color: #fff;
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .escala-table thead th:first-child {
+      width: 35%;
+    }
+
+    .escala-table tbody tr {
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .escala-table tbody tr:nth-child(even) {
+      background: #f9fafb;
+    }
+
+    .escala-table tbody td {
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+
+    .escala-table tbody td:first-child {
+      font-weight: 500;
+    }
+
+    .dia-header td {
+      background: #dbeafe !important;
+      font-weight: 700 !important;
+      font-size: 13px !important;
+      padding: 6px 12px !important;
+      border-bottom: 1px solid #93c5fd !important;
+    }
+
+    .emoji-icon {
+      margin-right: 4px;
+    }
+
+    /* ============================================================
+       RODAPÉ
+       ============================================================ */
+    .print-footer {
+      margin-top: 30px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+      font-size: 10px;
+      color: #999;
+    }
+
+    .print-footer .assinatura {
+      margin-top: 40px;
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .print-footer .assinatura div {
+      width: 200px;
+      text-align: center;
+    }
+
+    .print-footer .assinatura .linha {
+      border-top: 1px solid #333;
+      margin-top: 4px;
+      padding-top: 4px;
+      font-size: 10px;
+      color: #555;
+    }
+
+    /* ============================================================
+       INDISPONIBILIDADES
+       ============================================================ */
+    .indisp-section {
+      margin-top: 20px;
+      padding: 12px;
+      background: #fef3c7;
+      border-radius: 6px;
+      border-left: 3px solid #f59e0b;
+    }
+
+    .indisp-section h3 {
+      font-size: 12px;
+      font-weight: 600;
+      color: #92400e;
+      margin-bottom: 6px;
+    }
+
+    .indisp-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .indisp-section li {
+      font-size: 11px;
+      color: #78350f;
+      padding: 2px 0;
+    }
+
+    .indisp-section li::before {
+      content: '⚠️ ';
+    }
+
+    /* ============================================================
+       IMPRESSÃO
+       ============================================================ */
+    @media print {
+      body {
+        padding: 0;
+        font-size: 11px;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .print-header h1 {
+        font-size: 20px;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .escala-table thead th {
+        background: #1e40af !important;
+        color: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .dia-header td {
+        background: #dbeafe !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .indisp-section {
+        background: #fef3c7 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      @page {
+        size: A4;
+        margin: 15mm;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Botão de fechar/imprimir (não aparece na impressão) -->
+  <div class="no-print" style="text-align:right; margin-bottom:12px;">
+    <button onclick="window.print()" style="padding:8px 16px; background:#1e40af; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:13px;">
+      🖨️ Imprimir / Salvar PDF
+    </button>
+    <button onclick="window.close()" style="padding:8px 16px; background:#6b7280; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:13px; margin-left:8px;">
+      ✕ Fechar
+    </button>
+  </div>
+
+  <!-- Cabeçalho -->
+  <div class="print-header">
+    <h1>🏠 Escala de Limpeza</h1>
+    <p class="periodo" id="periodo">Carregando...</p>
+  </div>
+
+  <!-- Tabela da escala -->
+  <table class="escala-table" id="tabela-escala">
+    <thead>
+      <tr>
+        <th>Dia</th>
+        <th>Local</th>
+        <th>Morador</th>
+      </tr>
+    </thead>
+    <tbody id="corpo-tabela">
+      <tr><td colspan="3" style="text-align:center; color:#999;">Nenhuma escala gerada.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Indisponibilidades -->
+  <div class="indisp-section" id="secao-indisp" style="display:none;">
+    <h3>⚠️ Indisponibilidades da semana</h3>
+    <ul id="lista-indisp"></ul>
+  </div>
+
+  <!-- Rodapé -->
+  <div class="print-footer">
+    <p>Casa do Estudante — Escala de Limpeza Semanal</p>
+    <div class="assinatura">
+      <div><div class="linha">Síndico</div></div>
+      <div><div class="linha">Representante dos Moradores</div></div>
+    </div>
+  </div>
+
+  <script>
+    // Recebe dados via URL params ou localStorage
+    function carregarDados() {
+      // Tenta pegar do localStorage (setado pelo admin)
+      const dados = localStorage.getItem('escala_print_data');
+      if (!dados) {
+        document.getElementById('periodo').textContent = 'Dados não disponíveis.';
+        return;
+      }
+
+      const data = JSON.parse(dados);
+      localStorage.removeItem('escala_print_data'); // limpa após uso
+
+      // Período
+      document.getElementById('periodo').textContent =
+        `${data.periodo.inicio} a ${data.periodo.fim}`;
+
+      // Tabela
+      const tbody = document.getElementById('corpo-tabela');
+      tbody.innerHTML = '';
+
+      let ultimoDia = '';
+      data.escala.forEach(row => {
+        const emoji = row.emoji || '▪️';
+        const nomeDia = row.dia;
+
+        // Linha de separação de dia
+        if (nomeDia !== ultimoDia) {
+          ultimoDia = nomeDia;
+          const trDia = document.createElement('tr');
+          trDia.className = 'dia-header';
+          trDia.innerHTML = `<td colspan="3">${nomeDia}</td>`;
+          tbody.appendChild(trDia);
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td></td>
+          <td><span class="emoji-icon">${emoji}</span>${row.local}</td>
+          <td>${row.morador}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Indisponibilidades
+      if (data.indisponibilidades && data.indisponibilidades.length > 0) {
+        const secao = document.getElementById('secao-indisp');
+        const lista = document.getElementById('lista-indisp');
+        secao.style.display = 'block';
+        lista.innerHTML = '';
+        data.indisponibilidades.forEach(ind => {
+          const li = document.createElement('li');
+          li.textContent = `${ind.dia}: ${ind.morador}`;
+          lista.appendChild(li);
+        });
+      }
+    }
+
+    carregarDados();
+  </script>
+</body>
+</html>

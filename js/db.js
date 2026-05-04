@@ -245,6 +245,8 @@ function showToast(msg, type = '') {
   el._timer = setTimeout(() => el.classList.add('hidden'), 3500);
 }
 
-function showLoading(show) {
+function showLoading(show, msg = '') {
   document.getElementById('loading').classList.toggle('hidden', !show);
+  const msgEl = document.getElementById('loading-msg');
+  if (msgEl) msgEl.textContent = msg;
 }

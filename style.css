@@ -18,6 +18,24 @@
   --shadow-lg: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
 }
 
+/* Dark mode variables */
+.dark-mode {
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-light: #1e3a5f;
+  --success: #10b981;
+  --success-light: #064e3b;
+  --error: #ef4444;
+  --error-light: #7f1d1d;
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --border: #334155;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --shadow: 0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
+  --shadow-lg: 0 4px 6px rgba(0,0,0,.3), 0 2px 4px rgba(0,0,0,.2);
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -163,6 +181,11 @@ body {
 
 .suggestion-item:last-child { border-bottom: none; }
 .suggestion-item:hover { background: var(--primary-light); color: var(--primary); }
+.suggestion-item mark {
+  background: none;
+  color: var(--primary);
+  font-weight: 600;
+}
 
 /* ============================================================
    SELECTED NAME
@@ -365,6 +388,15 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 100;
+}
+
+.loading-msg {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  margin: 0;
+  min-height: 20px;
 }
 
 .spinner {

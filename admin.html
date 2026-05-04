@@ -3,25 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1e40af">
   <title>Admin — Escala de Limpeza</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
 </head>
 <body>
   <!-- Modal de Login -->
-  <div id="modal-login" class="modal-overlay">
+  <div id="login-screen" class="modal-overlay">
     <div class="modal">
       <h2>🔒 Acesso Restrito</h2>
       <p>Área do síndico. Informe a senha para continuar.</p>
       <div class="form-group">
-        <input type="password" id="input-senha" class="input" placeholder="Senha" autofocus>
-        <p id="erro-senha" class="error-msg hidden">Senha incorreta.</p>
+        <input type="password" id="admin-password" class="input" placeholder="Senha" autofocus
+          onkeydown="if(event.key==='Enter') tentarLogin()">
+        <p id="erro-senha" class="error-msg hidden">Email ou senha incorretos.</p>
       </div>
       <br>
       <button class="btn btn-primary" onclick="tentarLogin()">Entrar</button>
     </div>
   </div>
 
-  <div class="admin-app">
+  <div id="admin-panel" class="admin-app" style="display:none">
     <header class="header">
       <div class="header-inner wide">
         <div class="header-logo">🏠</div>
@@ -30,6 +33,7 @@
           <p class="header-subtitle">Escala de Limpeza — Casa do Estudante</p>
         </div>
         <div class="header-spacer"></div>
+        <button class="btn-logout" onclick="toggleDarkMode()" title="Alternar tema" id="btn-dark-mode">🌙</button>
         <button class="btn-logout" onclick="logout()">Sair</button>
       </div>
     </header>
@@ -45,7 +49,7 @@
 
       <!-- Tabs -->
       <div class="tabs">
-        <button class="tab-btn" data-tab="escala" onclick="mudarTab('escala')">📋 Escala</button>
+        <button class="tab-btn active" data-tab="escala" onclick="mudarTab('escala')">📋 Escala</button>
         <button class="tab-btn" data-tab="config" onclick="mudarTab('config')">⚙️ Configuração</button>
         <button class="tab-btn" data-tab="feriados" onclick="mudarTab('feriados')">🏖️ Feriados</button>
         <button class="tab-btn" data-tab="moradores" onclick="mudarTab('moradores')">👥 Moradores</button>
@@ -54,7 +58,7 @@
       <!-- ================================================
            ABA: ESCALA
            ================================================ -->
-      <div id="tab-escala" class="tab-content">
+      <div id="tab-escala" class="tab-content active">
 
         <!-- Resumo de indisponibilidades -->
         <div class="card" style="margin-bottom:16px">
@@ -135,6 +139,14 @@
             Use o toggle para ativar ou desativar moradores na escala.
           </p>
 
+          <!-- Campo de busca -->
+          <div class="search-container" style="margin-bottom:12px;">
+            <input type="text" id="input-busca-morador" class="input"
+              placeholder="🔍 Buscar morador por nome..."
+              oninput="filtrarMoradores()"
+              style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit;">
+          </div>
+
           <div id="lista-moradores" class="morador-list"></div>
 
           <h4 style="font-size:14px; font-weight:600; margin-bottom:10px;">Adicionar morador</h4>
@@ -150,14 +162,21 @@
   </div>
 
   <div id="loading" class="loading-overlay hidden">
-    <div class="spinner"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+      <div class="spinner"></div>
+      <p id="loading-msg" class="loading-msg"></p>
+    </div>
   </div>
 
   <div id="toast" class="toast hidden"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
-  <script src="js/db.js"></script>
-  <script src="js/admin.js"></script>
+  <script type="module" src="js/admin.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
 </body>
 </html>
