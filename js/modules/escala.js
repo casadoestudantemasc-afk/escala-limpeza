@@ -344,7 +344,9 @@ async function salvarConfigLocais() {
 
   try {
     await DB.salvarConfigLocais(segunda, ids);
-    AppState.configLocaisSemana[segunda] = ids;
+    dias.forEach(d => {
+      AppState.configLocaisSemana[toISO(d)] = [...ids];
+    });
     showToast('Configuração salva!', 'success');
   } catch (e) {
     showToast('Erro ao salvar configuração: ' + e.message, 'error');

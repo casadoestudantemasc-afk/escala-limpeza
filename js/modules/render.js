@@ -5,7 +5,6 @@
 
 import { AppState, EMOJIS_LOCAIS, DIAS_SEMANA, DIAS_CURTO } from './state.js';
 import { getDiasSemana, toISO, toBR } from './dateUtil.js';
-import DB from './db.js';
 
 // ============== RENDERIZAÇÃO DA ESCALA ============
 
@@ -198,20 +197,23 @@ function renderizarConfigTab() {
   if (!container) return;
 
   const dias = getDiasSemana(AppState.weekOffset);
-  const segunda = toISO(dias[0]);
-  const locaisConfigurados = AppState.configLocaisSemana[segunda] || [];
+  const configDaSemana = dias
+    .map(d => AppState.configLocaisSemana[toISO(d)] || [])
+    .find(ids => ids.length > 0) || [];
+  const usarPadraoTodos = configDaSemana.length === 0;
 
   let html = `<p class="config-hint">Selecione os locais ativos para esta semana (padrão: todos):</p>`;
-  html += `<div class="locais-config-grid">`;
+  html += `<p id="count-locais-config" class="week-label" style="margin-bottom:10px"></p>`;
+  html += `<div class="config-locais-grid">`;
   
   AppState.locais.forEach(local => {
-    const isChecked = locaisConfigurados.includes(local.id) ? 'checked' : '';
+    const isChecked = (usarPadraoTodos || configDaSemana.includes(local.id)) ? 'checked' : '';
     const emoji = EMOJIS_LOCAIS[local.nome] || '📍';
     html += `
-      <label class="locais-config-item">
+      <label class="config-local-item">
         <input type="checkbox" value="${local.id}" ${isChecked} onchange="atualizarConfigLocais()">
-        <span class="locais-config-emoji">${emoji}</span>
-        <span class="locais-config-nome">${local.nome}</span>
+        <span>${emoji}</span>
+        <span>${local.nome}</span>
       </label>
     `;
   });

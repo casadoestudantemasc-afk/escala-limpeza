@@ -51,7 +51,7 @@ function initDarkMode() {
   const saved = localStorage.getItem('darkMode');
   if (saved === 'true') {
     document.body.classList.add('dark-mode');
-    const toggle = document.getElementById('dark-mode-toggle');
+    const toggle = document.getElementById('dark-mode-toggle') || document.getElementById('btn-dark-mode');
     if (toggle) {
       toggle.innerHTML = '☀️';
       toggle.title = 'Modo claro';
@@ -67,7 +67,7 @@ function toggleDarkMode() {
   const isDark = document.body.classList.contains('dark-mode');
   localStorage.setItem('darkMode', isDark);
   
-  const toggle = document.getElementById('dark-mode-toggle');
+  const toggle = document.getElementById('dark-mode-toggle') || document.getElementById('btn-dark-mode');
   if (toggle) {
     toggle.innerHTML = isDark ? '☀️' : '🌙';
     toggle.title = isDark ? 'Modo claro' : 'Modo escuro';
@@ -108,11 +108,13 @@ async function logout() {
 
 function semanaAnterior() {
   weekOffset--;
+  AppState.weekOffset = weekOffset;
   trocarSemana();
 }
 
 function proximaSemana() {
   weekOffset++;
+  AppState.weekOffset = weekOffset;
   trocarSemana();
 }
 
@@ -140,6 +142,8 @@ async function trocarSemana() {
 async function carregarDadosSemana() {
   showLoading(true, 'Carregando dados da semana...');
   try {
+    AppState.weekOffset = weekOffset;
+
     const [start, end] = getWeekRange(weekOffset);
     const dias = getDiasSemana(weekOffset);
     const segunda = toISO(dias[0]);
@@ -158,8 +162,22 @@ async function carregarDadosSemana() {
       DB.getConfigLocaisSemana(segunda)
     ]);
 
-    // Converter config para mapa
-    configLocaisSemana = { [segunda]: configLocaisSemana };
+    // Sincronizar estado utilizado pelos módulos de render e regras
+    AppState.moradores = moradores;
+    AppState.locais = locais;
+    AppState.feriados = feriados;
+    AppState.escalaAtual = escalaAtual;
+    AppState.indisponibilidadesAtual = indisponibilidadesAtual;
+    AppState.configLocaisSemana = configLocaisSemana || {};
+
+    // Backward compatibility para funções globais legadas
+    window.weekOffset = AppState.weekOffset;
+    window.moradores = AppState.moradores;
+    window.locais = AppState.locais;
+    window.feriados = AppState.feriados;
+    window.escalaAtual = AppState.escalaAtual;
+    window.indisponibilidadesAtual = AppState.indisponibilidadesAtual;
+    window.configLocaisSemana = AppState.configLocaisSemana;
 
   } catch (e) {
     showToast('Erro ao carregar dados: ' + e.message, 'error');

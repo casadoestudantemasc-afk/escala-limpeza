@@ -62,6 +62,28 @@ function mudarTab(tab) {
   
   // Atualizar estado
   AppState.activeTab = tab;
+
+  // Renderização sob demanda da aba ativa
+  if (tab === 'escala') {
+    if (typeof window.renderizarResumoIndisponibilidades === 'function') window.renderizarResumoIndisponibilidades();
+    if (typeof window.renderizarEscalaTab === 'function') window.renderizarEscalaTab();
+    return;
+  }
+
+  if (tab === 'config') {
+    if (typeof window.renderizarConfigTab === 'function') window.renderizarConfigTab();
+    if (typeof window.atualizarConfigLocais === 'function') window.atualizarConfigLocais();
+    return;
+  }
+
+  if (tab === 'feriados') {
+    if (typeof window.renderizarFeriadosTab === 'function') window.renderizarFeriadosTab();
+    return;
+  }
+
+  if (tab === 'moradores') {
+    if (typeof window.renderizarMoradoresTab === 'function') window.renderizarMoradoresTab();
+  }
 }
 
 /**
@@ -70,7 +92,7 @@ function mudarTab(tab) {
 function atualizarNavSemana() {
   const dias = getDiasSemana(AppState.weekOffset);
   const periodo = `${toBR(dias[0])} a ${toBR(dias[4])}`;
-  const nav = document.getElementById('nav-semana');
+  const nav = document.getElementById('week-label') || document.getElementById('nav-semana');
   if (nav) {
     nav.textContent = `Semana: ${periodo}`;
   }

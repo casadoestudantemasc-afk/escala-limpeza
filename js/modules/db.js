@@ -3,11 +3,25 @@
  * Centraliza todas as operações de banco de dados
  */
 
-import { AppState } from './state.js';
-
 const _sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
 export { _sb };
+
+/**
+ * Retorna os 5 dias (Seg-Sex) de uma semana em ISO.
+ */
+function getDiasISOdaSemana(segunda) {
+  const base = new Date(`${segunda}T12:00:00`);
+  const dias = [];
+
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(base);
+    d.setDate(base.getDate() + i);
+    dias.push(d.toISOString().slice(0, 10));
+  }
+
+  return dias;
+}
 
 const DB = {
   /**
@@ -139,19 +153,43 @@ const DB = {
    * Salva configuração de locais por semana
    */
   async getConfigLocaisSemana(segunda) {
+    const diasSemana = getDiasISOdaSemana(segunda);
+
     try {
-      const { data, error } = await supabase
+      // Schema atual: uma linha por local/dia (semana, dia, local_id)
+      const { data, error } = await _sb
+        .from('config_locais_semana')
+        .select('dia, local_id')
+        .eq('semana', segunda);
+
+      if (!error) {
+        const map = {};
+        (data || []).forEach(row => {
+          if (!map[row.dia]) map[row.dia] = [];
+          map[row.dia].push(row.local_id);
+        });
+        return map;
+      }
+
+      // Fallback para schema legado: uma linha por semana com array "locais"
+      const { data: legado, error: legadoError } = await _sb
         .from('config_locais_semana')
         .select('locais')
         .eq('semana', segunda)
         .maybeSingle();
-      
-      if (error) throw error;
-      return data?.locais || [];
+
+      if (legadoError) throw legadoError;
+
+      const locais = legado?.locais || [];
+      const map = {};
+      diasSemana.forEach(dia => {
+        map[dia] = [...locais];
+      });
+      return map;
     } catch (e) {
       // Tabela não existe ainda (migração pendente)
-      console.warn('Tabela config_locais_semana indisponível');
-      return [];
+      console.warn('Tabela config_locais_semana indisponível ou incompatível', e);
+      return {};
     }
   },
 
@@ -159,11 +197,35 @@ const DB = {
    * Salva configuração de locais por semana
    */
   async salvarConfigLocais(segunda, locais) {
-    const { error } = await _sb
-      .from('config_locais_semana')
-      .upsert({ semana: segunda, locais }, { onConflict: 'semana' });
-    
-    if (error) throw error;
+    const diasSemana = getDiasISOdaSemana(segunda);
+
+    try {
+      // Schema atual: uma linha por dia/local.
+      const { error: delError } = await _sb
+        .from('config_locais_semana')
+        .delete()
+        .eq('semana', segunda);
+      if (delError) throw delError;
+
+      if (!Array.isArray(locais) || locais.length === 0) return;
+
+      const rows = [];
+      diasSemana.forEach(dia => {
+        locais.forEach(localId => {
+          rows.push({ semana: segunda, dia, local_id: localId });
+        });
+      });
+
+      const { error } = await _sb.from('config_locais_semana').insert(rows);
+      if (error) throw error;
+    } catch (schemaAtualError) {
+      // Fallback para schema legado: um registro por semana com coluna array.
+      const { error: legadoError } = await _sb
+        .from('config_locais_semana')
+        .upsert({ semana: segunda, locais }, { onConflict: 'semana' });
+
+      if (legadoError) throw schemaAtualError;
+    }
   },
 
   /**
