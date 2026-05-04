@@ -59,14 +59,19 @@ const DB = {
       .select(`
         *,
         moradores (id, nome),
-        locais (id, nome)
+        locais (id, nome, ordem)
       `)
       .gte('data', start)
       .lte('data', end)
-      .order('data')
-      .order('locais', { foreignTable: 'locais' });
-    
+      .order('data');
+
     if (error) throw error;
+
+    data.sort((a, b) => {
+      if (a.data < b.data) return -1;
+      if (a.data > b.data) return 1;
+      return (a.locais?.ordem ?? 0) - (b.locais?.ordem ?? 0);
+    });
     return data;
   },
 
