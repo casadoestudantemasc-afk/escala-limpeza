@@ -77,6 +77,8 @@ async function gerarEscala(forcar = false) {
             data: iso,
             semana: segunda
           });
+          // Incrementa o historico em tempo real para evitar repetição na mesma semana
+          historico[embaralhados[i].id] = (historico[embaralhados[i].id] || 0) + 1;
         }
       });
     }
