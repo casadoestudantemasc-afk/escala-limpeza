@@ -25,7 +25,7 @@ async function gerarEscala(forcar = false) {
     if (!confirm('Já existe uma escala para esta semana. Deseja regenerar?')) return;
   }
 
-  showLoading(true);
+  showLoading(true, 'Gerando escala...');
   try {
     const [start, end] = getWeekRange(AppState.weekOffset);
     await DB.deletarEscala(start, end);
@@ -60,11 +60,11 @@ async function gerarEscala(forcar = false) {
         avisos.push(`${DIAS_CURTO[dia.getDay()]} ${toBR(dia)}: apenas ${disponiveis.length} disponíveis para ${locaisHoje.length} locais`);
       }
 
-      // Ordenar por menos aparições no histórico (com aleatoriedade nos empates)
-      const ordenados = [...disponiveis].sort((a, b) => {
-        const diff = (historico[a.id] || 0) - (historico[b.id] || 0);
-        return diff !== 0 ? diff : Math.random() - 0.5;
-      });
+      // Ordenar por menos aparições no histórico; empates resolvidos por chave aleatória fixa
+      const ordenados = disponiveis
+        .map(m => ({ m, count: historico[m.id] || 0, rand: Math.random() }))
+        .sort((a, b) => a.count !== b.count ? a.count - b.count : a.rand - b.rand)
+        .map(({ m }) => m);
 
       const selecionados = ordenados.slice(0, Math.min(locaisHoje.length, ordenados.length));
       const embaralhados = shuffle(selecionados);
@@ -236,19 +236,16 @@ async function compartilharWhatsApp() {
  * Adiciona um feriado
  */
 async function adicionarFeriado() {
-  const input = document.getElementById('feriado-input');
-  const data = input.value;
-  
-  if (!data) {
-    showToast('Selecione uma data.', 'error');
-    return;
-  }
+  const data = document.getElementById('input-feriado-data').value;
+  const descricao = document.getElementById('input-feriado-desc').value.trim();
 
-  const descricao = prompt('Descrição do feriado (ex: Carnaval):');
-  if (!descricao) return;
+  if (!data) { showToast('Selecione uma data.', 'error'); return; }
+  if (!descricao) { showToast('Digite a descrição do feriado.', 'error'); return; }
 
   try {
     await DB.adicionarFeriado(data, descricao);
+    document.getElementById('input-feriado-data').value = '';
+    document.getElementById('input-feriado-desc').value = '';
     await carregarDadosSemana();
     renderizarFeriadosTab();
     showToast('Feriado adicionado!', 'success');
@@ -279,13 +276,10 @@ async function removerFeriado(id) {
  * Filtra moradores na lista
  */
 function filtrarMoradores() {
-  const input = document.getElementById('buscar-morador');
-  const filter = input.value.toLowerCase();
-  const items = document.getElementsByClassName('morador-item');
-
-  Array.from(items).forEach(item => {
-    const nome = item.querySelector('.morador-info strong').textContent.toLowerCase();
-    item.style.display = nome.includes(filter) ? 'flex' : 'none';
+  const filter = document.getElementById('input-busca-morador').value.toLowerCase();
+  document.querySelectorAll('#lista-moradores .morador-item').forEach(item => {
+    const nome = item.querySelector('.name')?.textContent.toLowerCase() || '';
+    item.style.display = nome.includes(filter) ? '' : 'none';
   });
 }
 
@@ -307,7 +301,7 @@ async function alternarMorador(id, ativo) {
  * Adiciona novo morador
  */
 async function adicionarMorador() {
-  const input = document.getElementById('novo-morador');
+  const input = document.getElementById('input-novo-morador');
   const nome = input.value.trim();
   
   if (!nome) {

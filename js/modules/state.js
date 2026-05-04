@@ -21,7 +21,7 @@ const AppState = {
   
   // Configurações
   CONFIG: {
-    MAX_MORADORES: 20,
+    MAX_MORADORES: 200,
     DEFAULT_LOCAIS: [
       'Lavanderias',
       'Área Externa | Águas',
